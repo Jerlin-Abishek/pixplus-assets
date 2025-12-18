@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PixPlus Automation & Dimmer Controller</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+--bg1:#0b0b0b;
+--bg2:#151515;
+--glass:rgba(255,255,255,0.06);
+--border:rgba(255,255,255,0.14);
+--primary:#4da3ff;
+--success:#3ddc84;
+--danger:#ff4f4f;
+--text:#f5f5f5;
+--muted:#a8a8a8;
+}
+
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  padding:0;
+  font-family:"Segoe UI",sans-serif;
+  background:linear-gradient(145deg,var(--bg1),var(--bg2));
+  color:var(--text);
+  overflow:hidden; /* 🔒 prevents scroll zoom weirdness */
+}
+
+
+.page{
+  width:100%;
+  max-width:1600px;
+  margin:auto;
+  padding:20px;
+}
+
+/* Header */
+.header{
+  position:relative;
+  display:flex;
+  align-items:center;
+  padding:22px 24px;
+  margin-bottom:18px;
+
+  /* REMOVE BOX LOOK */
+  background:none;
+  border:none;
+  border-radius:0;
+}
+
+.header-left{
+  display:flex;
+  align-items:center;
+  gap:14px;
+}
+.header-center{
+  position:absolute;
+  left:50%;
+  transform:translateX(-50%);
+  text-align:center;
+  pointer-events:none; /* prevents overlap issues */
+}
+.title-main{
+  font-family: -apple-system, BlinkMacSystemFont,
+               'Segoe UI', Roboto, Oxygen, Ubuntu,
+               Cantarell, sans-serif;
+
+  font-size:34px;
+  font-weight:600;
+  color:#ffffff;
+  letter-spacing:0.5px;
+
+  text-shadow:
+    0 0 6px rgba(255,255,255,0.9),
+    0 0 14px rgba(255,255,255,0.8),
+    0 0 30px rgba(255,255,255,0.6),
+    0 0 50px rgba(255,255,255,0.35);
+
+  padding-bottom:12px;
+  position:relative;
+}
+.header-right{
+  position:absolute;
+  right:24px;
+  top:50%;
+  transform:translateY(-50%);
+  display:flex;
+  gap:18px;
+  font-size:13px;
+  color:var(--muted);
+}
+.logo-img{
+  height:75px;        /* control logo size */
+  width:auto;         /* keep aspect ratio */
+  max-width:200px;    /* prevent overflow */
+  object-fit:contain;
+}
+ /* Gold Line */
+ 
+.title-main::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  bottom:0;
+  transform:translateX(-50%);
+  width:60%;
+  height:2px;
+  background:linear-gradient(to right, transparent, #cfa24a, transparent);
+  box-shadow:0 0 10px rgba(207,162,74,0.9);
+}
+.header{
+  position:relative;
+  display:flex;
+  align-items:center;
+  padding:22px 24px;
+  margin-bottom:18px;
+
+  /* IMPORTANT FIX */
+  justify-content:flex-start;  /* 👈 logo stays LEFT */
+
+  background:none;
+  border:none;
+}
+
+
+/* DASHBOARD */
+.dashboard{
+display:grid;grid-template-columns:repeat(4,1fr);
+gap:14px;margin-bottom:16px;
+}
+.card{
+background:var(--glass);border:1px solid var(--border);
+border-radius:16px;padding:16px;
+}
+.card h2{margin:0;font-size:26px}
+.card span{font-size:13px;color:var(--muted)}
+
+/* ACTIONS */
+.actions{display:flex;gap:12px;margin-bottom:16px}
+.actions button{
+padding:10px 18px;border:none;border-radius:12px;
+background:var(--glass);color:var(--text);
+font-weight:600;cursor:pointer;
+}
+
+/* PANELS */
+.panel{
+background:var(--glass);border:1px solid var(--border);
+border-radius:18px;padding:18px;margin-bottom:16px;
+}
+.panel-title{font-size:18px;margin-bottom:12px}
+
+/* IP INPUT */
+.ip-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ip-box{
+width:60px;padding:10px;text-align:center;
+background:rgba(255,255,255,.08);
+border:1px solid var(--border);border-radius:8px;
+color:var(--text);
+}
+.go-btn{
+background:var(--primary);padding:10px 20px;
+border:none;border-radius:10px;font-weight:600;cursor:pointer;
+}
+
+/* DEVICE LIST */
+.device-row{
+display:grid;
+grid-template-columns:26px 170px 170px 1fr 190px;
+gap:14px;align-items:center;
+padding:14px;border-radius:14px;
+background:rgba(255,255,255,0.05);
+margin-bottom:10px;
+}
+.status{width:12px;height:12px;border-radius:50%}
+.online{background:var(--success)}
+.offline{background:var(--danger)}
+.meta{font-size:12px;color:var(--muted)}
+
+.btn{
+padding:8px 14px;border:none;border-radius:10px;
+font-weight:600;cursor:pointer;
+}
+.connect{background:var(--primary)}
+.delete{background:var(--danger)}
+.sync{background:#666}
+
+.empty{text-align:center;color:var(--muted);padding:30px}
+
+/* EVENT LOG */
+.log{
+background:rgba(0,0,0,0.45);
+border-radius:14px;padding:12px;
+font-family:monospace;font-size:13px;
+max-height:160px;overflow:auto;
+}
+.log div{color:#9fdfc3}
+
+/* FOOTER */
+.footer{text-align:center;font-size:12px;color:var(--muted)}
+
+/* ===== SCAN RESULT CLEAN LAYOUT ===== */
+.scan-row{
+  display:grid;
+  grid-template-columns: 180px 220px 90px;
+  gap:12px;
+  align-items:center;
+  padding:12px;
+  border-radius:12px;
+  background:rgba(255,255,255,0.05);
+  margin-bottom:8px;
+}
+
+.scan-row span{
+  font-weight:600;
+}
+
+.scan-row input{
+  width:100%;
+}
+
+.scan-row .btn{
+  justify-self:end;
+}
+
+.ip-group{
+  display:flex;
+  align-items:center;
+  gap:4px;
+}
+
+.ip-group span{
+  opacity:0.6;
+}
+
+.card:hover,
+.actions button:hover,
+.go-btn:hover,
+.btn.delete:hover,
+.panel:hover,
+.ip-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+<!-- HEADER -->
+<div class="header">
+
+  <!-- LEFT LOGO -->
+  
+    <!--<img 
+      src="https://img.sanishtech.com/u/70f8ab4698d19f314a9d96ec4b574907.png"
+      class="logo-img"
+      alt="PixPlus Logo"
+    />
+  </div> -->
+<div class="header-left">
+  <img src="https://i.ibb.co/KcBS0CGw/pix-plus-frame-png.png" 
+  alt="pix-plus-frame-png" class="logo-img"/></div>
+  <!-- CENTER TITLE -->
+  <div class="header-center">
+    <div class="title-main">
+      PixPlus Automation & Dimmer Controller
+    </div>
+  </div>
+
+  <!-- RIGHT INFO -->
+  <div class="header-right">
+    <div>v1.6.2</div>
+    <div>Online ●</div>
+    <div id="clock"></div>
+    <div>⚙</div>
+  </div>
+
+</div>
+
+
+<!-- DASHBOARD -->
+<div class="dashboard">
+<div class="card"><h2 id="cDevices">0</h2><span>Devices</span></div>
+<div class="card"><h2 id="cOnline">0</h2><span>Online</span></div>
+<div class="card"><h2 id="cOffline">0</h2><span>Offline</span></div>
+<div class="card"><h2 id="cActive">0</h2><span>Active</span></div>
+</div>
+
+<!-- QUICK ACTIONS -->
+<div class="actions">
+<button onclick="refresh()">🔄 Refresh</button>
+</div>
+
+<!-- SCAN PANEL -->
+<div class="panel">
+<div class="panel-title">Scan Devices</div>
+
+<div class="ip-row">
+<input class="ip-box" id="ipA" value="192"> .
+<input class="ip-box" id="ipB" value="168"> .
+<input class="ip-box" id="ipC" value="100"> .
+<input class="ip-box" id="ipStart" value="1">
+<span style="opacity:.6">→</span>
+<input class="ip-box" id="ipEnd" value="255">
+<button class="go-btn" onclick="scanRange()">GO</button>
+<button class="btn delete" onclick="stopScan()">Stop</button>
+<div id="scanProgress" style="margin-top:10px;color:var(--muted)"></div>
+</div>
+
+<div id="scanResult" class="scan-list"></div>
+</div>
+
+<!-- DEVICES -->
+<div class="panel">
+<div class="panel-title">Devices</div>
+<div id="deviceList" class="empty">No devices</div>
+<br>
+<button class="btn connect" onclick="showAdd()">+ Add New Device</button>
+<div id="addDeviceBox" style="display:none;margin-top:14px"></div>
+</div>
+
+<!-- EVENT LOG -->
+<div class="panel">
+<div class="panel-title">Event Log</div>
+<div class="log" id="log"></div>
+</div>
+
+<div class="footer">© PixPlus Automation • Industrial Lighting Control</div>
+
+</div>
+
+<script>
+ 
+/* ===== HARD ZOOM LOCK ===== */
+
+// Disable Ctrl + / Ctrl - / Ctrl 0
+document.addEventListener("keydown", function(e) {
+  if (e.ctrlKey && (
+      e.key === "+" ||
+      e.key === "-" ||
+      e.key === "=" ||
+      e.key === "0"
+  )) {
+    e.preventDefault();
+  }
+});
+
+// Disable Ctrl + mouse wheel zoom
+document.addEventListener("wheel", function(e) {
+  if (e.ctrlKey) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+// Disable pinch zoom (trackpad / touch)
+document.addEventListener("gesturestart", e => e.preventDefault());
+document.addEventListener("gesturechange", e => e.preventDefault());
+document.addEventListener("gestureend", e => e.preventDefault());
+
+function goFullscreen() {
+  const el = document.documentElement;
+  if (el.requestFullscreen) el.requestFullscreen();
+  else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+window.addEventListener("load", () => {
+  goFullscreen();
+});
+
+mainWindow.webContents.setZoomFactor(1);
+mainWindow.webContents.setVisualZoomLevelLimits(1, 1);
+mainWindow.setFullScreen(true);
+
+
+
+
+let connectedIP = null;
+const deviceList = document.getElementById("deviceList");
+const scanResult = document.getElementById("scanResult");
+const logBox = document.getElementById("log");
+
+let devices = [];
+
+/* CLOCK */
+setInterval(() => clock.textContent = new Date().toLocaleTimeString(), 1000);
+
+/* LOG */
+function log(msg){
+  const d = document.createElement("div");
+  d.textContent = `[${new Date().toLocaleTimeString()}] ${msg}`;
+  logBox.prepend(d);
+}
+
+function stopScan(){
+  scanAbort = true;
+  log("Stop button clicked");
+}
+
+/* LOAD JSON */
+window.addEventListener("DOMContentLoaded", async () => {
+  devices = await window.api.loadDevices() || [];
+  renderDevices();
+});
+
+/* IP VALIDATION – SINGLE SOURCE */
+const ipBoxes = [ipA, ipB, ipC, ipStart, ipEnd];
+
+ipBoxes.forEach((box, index) => {
+  box.addEventListener("input", () => {
+    box.value = box.value.replace(/\D/g, "");
+    if (box.value.length > 3) box.value = box.value.slice(0, 3);
+    if (Number(box.value) > 255) box.value = "255";
+  });
+
+  box.addEventListener("keydown", e => {
+    if ([".", ":", " ", "Tab"].includes(e.key)) {
+      e.preventDefault();
+      ipBoxes[index + 1]?.focus();
+    }
+    if (e.key === "Backspace" && box.value === "" && index > 0) {
+      ipBoxes[index - 1].focus();
+    }
+  });
+});
+
+/* RENDER DEVICES */
+function renderDevices(){
+  deviceList.innerHTML = "";
+
+  if (!devices.length){
+    deviceList.className = "empty";
+    deviceList.textContent = "No devices";
+    updateCounts();
+    return;
+  }
+
+  deviceList.className = "";
+
+  devices.forEach(d => {
+    const row = document.createElement("div");
+    row.className = "device-row";
+    row.dataset.ip = d.ip;
+
+    row.innerHTML = `
+      <div class="status offline"></div>
+      <div><b>${d.ip}</b></div>
+      <div>${d.name || "Screen"}</div>
+      <div class="meta">
+        Model: ${d.model || "—"} | Relays: ? | Dimmers: ?
+      </div>
+      <div>
+        <button class="btn sync">Sync</button>
+        <button class="btn delete">✕</button>
+        <button class="btn connect">Connect</button>
+      </div>
+    `;
+
+    // SYNC
+    row.querySelector(".sync").onclick = () => {
+      log("Sync requested " + d.ip);
+      window.api.syncDevice?.(d.ip);
+    };
+
+    // DELETE
+row.querySelector(".delete").onclick = () => {
+
+  const ok = confirm(
+    `Delete device?\n\nIP: ${d.ip}\nName: ${d.name || "Screen"}`
+  );
+
+  if (!ok) return;
+
+  devices = devices.filter(x => x.ip !== d.ip);
+  window.api.saveDevices(devices);
+  renderDevices();
+
+  log("Device deleted " + d.ip);
+};
+
+    // CONNECT
+row.querySelector(".connect").onclick = () => {
+
+  const ip = d.ip;
+  const name = d.name || "Screen";
+
+  if (!ip || !name) {
+    alert("Invalid device details");
+    return;
+  }
+
+  log("Connecting to " + ip);
+  window.api.connectDevice({ ip, name });
+};
+
+
+    deviceList.appendChild(row);
+  });
+
+  updateCounts();
+}
+
+function sendCommand(cmd){
+  if (!connectedIP) {
+    alert("No device connected");
+    return;
+  }
+
+  window.api.sendTcpCommand({
+    ip: connectedIP,
+    command: cmd
+  });
+
+  log("TX → " + connectedIP + " : " + cmd);
+}
+
+
+/* RANGE SCAN */
+let scanAbort = false;
+
+async function scanRange(){
+  log("GO clicked → scanRange() started");
+
+  scanAbort = false;
+  scanResult.innerHTML = "";
+
+  const base = `${ipA.value}.${ipB.value}.${ipC.value}.`;
+  const start = Number(ipStart.value);
+  const end   = Number(ipEnd.value);
+
+  log(`Scan range: ${base}${start} → ${end}`);
+
+  if (start > end){
+    alert("Start IP must be less than End IP");
+    log("ERROR: Start IP greater than End IP");
+    return;
+  }
+
+  if (!window.api || !window.api.scanSingle) {
+    log("❌ ERROR: window.api.scanSingle NOT available");
+    scanProgress.textContent = "Scan API not available";
+    return;
+  }
+
+  const total = end - start + 1;
+  let current = 0;
+
+  scanProgress.textContent = "Scanning...";
+
+  for (let i = start; i <= end; i++){
+
+    if (scanAbort) {
+      log("Scan aborted by user");
+      scanProgress.textContent = "Scan stopped";
+      return;
+    }
+
+    current++;
+    scanProgress.textContent = `Scanning ${current} / ${total}`;
+
+    const ip = base + i;
+    log(`Scanning IP: ${ip}`);
+
+    try {
+      const found = await window.api.scanSingle({ ip, port: 5555 });
+
+      log(`scanSingle result for ${ip}: ${JSON.stringify(found)}`);
+
+      if (found && found.length) {
+        found.forEach(addScanResult);
+      }
+
+    } catch (e) {
+      log(`ERROR scanning ${ip}: ${e.message || e}`);
+    }
+  }
+
+  scanProgress.textContent = "Scan completed";
+  log("Scan completed");
+}
+
+/* ADD SCAN RESULT */
+function addScanResult(ip){
+  log("addScanResult called for " + ip);
+
+  if (document.querySelector(`#scan_${ip.replace(/\./g,"_")}`)) {
+    log("Duplicate scan result ignored: " + ip);
+    return;
+  }
+
+  if (devices.some(d => d.ip === ip)) {
+    log("IP already exists in devices.json: " + ip);
+    return;
+  }
+
+  const row = document.createElement("div");
+  row.id = `scan_${ip.replace(/\./g,"_")}`;
+
+  row.className = "scan-row";
+
+row.innerHTML = `
+  <span>${ip}</span>
+  <input class="ip-box scan-name" placeholder="Device Name">
+  <button class="btn sync" disabled>Save</button>
+`;
+
+
+  const nameInput = row.querySelector(".scan-name");
+  const saveBtn   = row.querySelector(".sync");
+
+  nameInput.addEventListener("input", () => {
+    saveBtn.disabled = nameInput.value.trim() === "";
+  });
+
+  saveBtn.onclick = () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+
+    devices.push({ ip, name });
+    window.api.saveDevices(devices);
+
+    renderDevices();
+    log("Device saved from scan: " + ip);
+
+    row.remove();
+  };
+
+  scanResult.appendChild(row);
+}
+
+/* ADD MANUAL */
+function showAdd(){
+
+  const box = document.getElementById("addDeviceBox");
+  box.style.display = "block";
+
+  box.innerHTML = `
+    <div class="scan-row">
+      <span>Add</span>
+
+<div class="ip-group">
+  <input class="ip-box add-ip" id="addA" value="192">
+  <span>.</span>
+  <input class="ip-box add-ip" id="addB" value="168">
+  <span>.</span>
+  <input class="ip-box add-ip" id="addC" value="100">
+  <span>.</span>
+  <input class="ip-box add-ip" id="addD" placeholder="1">
+</div>
+
+<input class="ip-box" id="addName" placeholder="Device Name" style="width:160px">
+
+<button class="btn sync" id="addSave" disabled>Add</button>
+<button class="btn delete" id="addCancel">Cancel</button>
+
+
+    </div>
+  `;
+
+  const ipBoxes = [
+    addA, addB, addC, addD
+  ];
+
+  const nameInput = document.getElementById("addName");
+  const saveBtn   = document.getElementById("addSave");
+  const cancelBtn = document.getElementById("addCancel");
+
+  // ===== IP VALIDATION (same as Scan) =====
+  ipBoxes.forEach((box, index) => {
+
+    box.addEventListener("input", () => {
+      box.value = box.value.replace(/\D/g, "");
+      if (box.value.length > 3) box.value = box.value.slice(0, 3);
+      if (Number(box.value) > 255) box.value = "255";
+      validate();
+    });
+
+    box.addEventListener("keydown", e => {
+      if ([".", " ", "Tab"].includes(e.key)) {
+        e.preventDefault();
+        ipBoxes[index + 1]?.focus();
+      }
+      if (e.key === "Backspace" && box.value === "" && index > 0) {
+        ipBoxes[index - 1].focus();
+      }
+    });
+  });
+
+  nameInput.addEventListener("input", validate);
+
+  function validate(){
+    const ipOk   = ipBoxes.every(b => b.value !== "");
+    const nameOk = nameInput.value.trim() !== "";
+    saveBtn.disabled = !(ipOk && nameOk);
+  }
+
+  // 🔥 IMPORTANT: initial validation
+  validate();
+
+  // ===== SAVE =====
+  saveBtn.onclick = () => {
+
+    const ip = `${addA.value}.${addB.value}.${addC.value}.${addD.value}`;
+    const name = nameInput.value.trim();
+
+    if (devices.some(d => d.ip === ip)) {
+      alert("Device already exists");
+      return;
+    }
+
+    devices.push({ ip, name });
+    window.api.saveDevices(devices);
+
+    renderDevices();
+    log("Device added manually " + ip);
+
+    box.style.display = "none";
+    box.innerHTML = "";
+  };
+
+  // ===== CANCEL =====
+  cancelBtn.onclick = () => {
+    box.style.display = "none";
+    box.innerHTML = "";
+  };
+}
+
+
+
+/* COUNTS */
+function updateCounts(){
+  cDevices.textContent = devices.length;
+  cOnline.textContent = 0;
+  cOffline.textContent = devices.length;
+  cActive.textContent = 0;
+}
+
+async function updateDashboardStatus() {
+    try {
+        // 1. Ping status
+        const results = await window.api.pingDevices();
+        const online = results.filter(d => d.online).length;
+        const total = results.length;
+
+        cOnline.textContent = online;
+        cOffline.textContent = total - online;
+
+        // Update status dots in device list
+        results.forEach(r => {
+            const row = document.querySelector(`.device-row[data-ip="${r.ip}"]`);
+            if (row) {
+                const dot = row.querySelector(".status");
+                dot.className = "status " + (r.online ? "online" : "offline");
+            }
+        });
+
+        // 2. Active windows
+        const activeCount = await window.api.getActiveDeviceCount();
+        cActive.textContent = activeCount;
+
+    } catch (e) {
+        console.error("Dashboard update failed", e);
+    }
+}
+
+
+/* ACTIONS */
+function refresh(){
+  log("Refresh clicked");
+  updateDashboardStatus();
+  renderDevices();
+}
+// 🔥 ADD THESE LINES
+updateDashboardStatus();
+setInterval(updateDashboardStatus, 10000);
+
+
+</script>
+
+</body>
+</html>

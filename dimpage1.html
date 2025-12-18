@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixPlus Automation and Dimmer Controller PPR3007_FULL</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1a1a;
+            color: #ffffff;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+    text-shadow: 0 2px 8px rgba(0,0,0,0.6);
+}
+
+
+        .header .screen-name {
+            font-size: 16px;
+            color: #ffffff;
+            opacity: 0.8;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .section {
+            background-color: #252525;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .section-title {
+    font-size: 19px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+}
+
+
+        /* Controls Section */
+        .relay-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }/* Smooth hover animation for schedule cards */
+
+.relay-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+       0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+        .relay-btn {
+            background-color: #3a3a3a;
+            border: none;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            min-width: 60px;
+        }
+
+        /* NEW: Styles for UDP status update */
+        .relay-btn.btn-grey { /* Used for S_ 0 (OFF) */
+            background-color: #3a3a3a;
+        }
+        .relay-btn.btn-green { /* Used for S_ 1 (ON) */
+            background-color: #4caf50;
+        }
+        /* Override 'active' only if it uses the same color as btn-green */
+        .relay-btn.active:not(.btn-green) {
+            background-color: #4caf50;
+        }
+
+        .relay-btn:hover:not(.btn-green):not(.active) {
+            background-color: #4a4a4a;
+        }
+
+        .dimmer-controls {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: stretch;
+        }
+        .dimmer-card:hover {
+           transform: translateY(-2px);
+            box-shadow: 
+                      0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+        .dimmer-card {
+            background-color: #2a2a2a;
+            border-radius: 6px;
+            padding: 18px 14px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .dimmer-icon {
+            font-size: 22px;
+            text-align: center;
+        }
+
+        .dimmer-info {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dimmer-label {
+            font-size: 14px;
+            font-weight: 500;
+            text-align: center;
+        }
+
+        .dimmer-slider-container {
+            position: relative;
+            width: 90%;
+        }
+
+        .dimmer-slider {
+            width: 100%;
+            height: 8px;
+            border-radius: 6px;
+            background-color: #3a3a3a;
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+
+        .dimmer-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+        }
+
+        .dimmer-slider::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background-color: #4caf50;
+            cursor: pointer;
+            border: none;
+        }
+
+        .dimmer-value {
+            font-size: 12px;
+            color: #aaaaaa;
+            text-align: center;
+            width: 100%;
+        }
+
+        /* Custom Command Section */
+        .command-input-group {
+            display: flex;
+            gap: 10px;
+        }
+     .command-input:hover {
+           transform: translateY(-2px);
+            box-shadow: 
+                      0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+        .command-input {
+            flex: 1;
+            background-color: #2a2a2a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 12px 15px;
+            color: #ffffff;
+            font-size: 14px;
+        }
+
+        .command-input::placeholder {
+            color: #666666;
+        }
+
+        .command-input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .send-btn {
+            background-color: #2196f3;
+            border: none;
+            color: #ffffff;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .send-btn:hover {
+            background-color: #1976d2;
+        }
+
+        /* Schedules Section */
+        .schedules-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    align-items: start;
+}
+
+
+
+
+
+        .schedule-card {
+    background: linear-gradient(180deg, #2d2d2d, #242424);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+    box-shadow: 
+        0 8px 20px rgba(0,0,0,0.35),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+}
+
+.schedule-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    row-gap: 6px;
+}
+
+
+.schedule-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+       0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+
+        .schedule-card-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #ffffff;
+    letter-spacing: 0.4px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    padding-bottom: 6px;
+}
+
+
+/* 1. Schedule Card Grid (Changed 120px to 80px for left alignment) */
+.schedule-field {
+    display: grid;
+    grid-template-columns: 80px 1fr; /* Smaller label width */
+    align-items: center;
+    column-gap: 14px;
+}
+
+
+/* 2. Left Align Labels (Changed from right align) */
+.schedule-field label {
+    font-size: 12px;
+    color: #aaaaaa;
+    text-align: left; /* CHANGED from right */
+    margin-bottom: 0;
+}
+
+
+        .schedule-input-group {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .schedule-input {
+            flex: 1;
+            background-color: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 6px;
+            padding: 6px 10px;
+            color: #ffffff;
+            height: 30px;
+            font-size: 12px;
+        }
+
+        .schedule-select {
+    flex: 1;
+    background-color: #1a1a1a;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 6px 10px;
+    height: 30px;
+    color: #ffffff;
+    font-size: 13px;
+    /* Removed custom appearance/padding for native arrow */
+    appearance: menulist;
+    -webkit-appearance: menulist;
+}
+
+        .schedule-select option {
+            background-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        /* 3. Time Input Alignment (Changed from center) */
+.time-input {
+    width: 100%;
+    height: 30px;
+    text-align: left; /* CHANGED from center */
+    font-weight: 600;
+}
+
+
+
+        .schedule-input::placeholder {
+            color: #666666;
+        }
+
+        .schedule-input:focus,
+.schedule-select:focus {
+    outline: none;
+    border-color: #4caf50;
+    box-shadow: 0 0 0 2px rgba(76,175,80,0.15);
+}
+
+
+        .clock-icon {
+            position: absolute;
+            right: 10px;
+            color: #666666;
+            font-size: 14px;
+        }
+
+        .add-btn {
+    background: linear-gradient(135deg, #2196f3, #1e88e5);
+    border: none;
+    color: #fff;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 130px;  
+            /* FIXED WIDTH */
+    margin-top: 4px;
+    box-shadow: 0 6px 15px rgba(33,150,243,0.35);
+    justify-self: start
+}
+
+.add-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(33,150,243,0.45);
+}
+
+
+        /* Right Panel */
+        .right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.right-panel .info-card:last-child {
+    flex: 1;
+}
+.info-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 
+        0px 0px 12px rgb(40, 123, 192),
+        inset 0 1px 0 rgba(255,255,255,0.04);
+}
+        .info-card {
+            background-color: #252525;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .info-item {
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+
+        .info-label {
+            color: #aaaaaa;
+            margin-right: 8px;
+        }
+
+        .info-value {
+            color: #ffffff;
+        }
+
+        .warning-text {
+            color: #f44336;
+            font-size: 13px;
+            margin-top: 15px;
+            margin-bottom: 15px;
+        }
+
+        .status-online {
+            color: #4caf50;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .action-btn {
+            background-color: #3a3a3a;
+            border: none;
+            color: #ffffff;
+            padding: 12px 20px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-btn:hover {
+            background-color: #4a4a4a;
+        }
+
+        .action-btn.reboot {
+            background-color: #f44336;
+            padding: 10px 16px;
+        }
+
+        .action-btn.reboot:hover {
+            background-color: #d32f2f;
+        }
+
+        .action-btn.health {
+            background-color: #2196f3;
+        }
+
+        .action-btn.health:hover {
+            background-color: #1976d2;
+        }
+        /* Log Output Section */
+        .log-output {
+            background-color: #1a1a1a;
+            border-radius: 6px;
+            padding: 15px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .log-entry {
+            color: #aaaaaa;
+            margin-bottom: 5px;
+        }
+
+        .log-entry.license {
+            color: #4caf50;
+        }
+
+        .log-entry.info {
+            color: #2196f3;
+        }
+
+        .log-entry.event {
+            color: #ff9800;
+        }
+
+        /* Existing Section - Renamed to Schedule Output */
+        .schedule-output-card {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 260px;
+}
+
+
+.schedule-output-card div {
+    background: #885f5f;
+    padding: 8px 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+}
+
+
+	.schedule-output-card div::before {
+    content: "⏱";
+    margin-right: 8px;
+    color: #4caf50;
+}
+
+	.section .schedules-grid,
+/* ADD THIS to your existing .schedule-card CSS */
+/*.section .schedules-grid > div {
+    flex: 1 1 auto;   /* width equal, height natural 
+    min-width: 0;
+    align-self: flex-start; 
+} */
+
+.schedule-card {
+    align-content: start;
+}
+/* Compact schedule layout */
+.schedule-card {
+    grid-template-columns: 1fr 1fr;
+    column-gap: 12px;
+}
+
+.schedule-card-title {
+    grid-column: span 2;
+}
+
+.schedule-field,
+.add-btn {
+    grid-column: span 2;
+}
+
+/*
+.schedule-card {
+    background: red !important;
+} */
+
+/* Time Picker  */
+
+.time-picker {
+    position: absolute;
+    background: #1f1f1f;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 10px;
+    z-index: 9999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+
+.time-picker.hidden {
+    display: none;
+}
+
+.tp-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.time-picker select {
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.time-picker button {
+    width: 100%;
+    background: #2196f3;
+    border: none;
+    padding: 6px;
+    color: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+}
+.clock-icon {
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 5;
+}
+.schedule-input {
+    padding-right: 32px; /* space for clock */
+}
+.time-picker {
+    position: absolute;
+    z-index: 99999;      /* VERY IMPORTANT */
+    background: #2b2b2b;
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+}
+.section,
+.schedule-card,
+.schedules-grid {
+    overflow: visible !important;
+}
+.clock-icon {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    z-index: 10;
+}
+.schedule-input {
+    padding-right: 34px;
+}
+.time-picker select {
+    max-height: 160px;     /* controls dropdown height */
+    overflow-y: auto;      /* enable scroll */
+}
+.time-picker option {
+    padding: 4px 6px;
+    font-size: 13px;
+}
+#tp-hour,
+#tp-minute,
+#tp-ampm {
+    width: 70px;
+    text-align: center;
+}
+.tp-row {
+    gap: 6px;
+}
+.time-picker select {
+    width: 70px;
+    background: #2a2a2a;
+    color: #fff;
+    border: 1px solid #444;
+    border-radius: 6px;
+    padding: 4px;
+    font-size: 13px;
+}
+
+.time-picker select option {
+    padding: 4px;
+}
+
+
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PixPlus Automation and Dimmer Controller PPR3007_FULL</h1>
+            <div class="screen-name">Screen_1</div>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="section">
+                    <div class="section-title">Controls</div>
+                    <div class="relay-buttons">
+                        <button class="relay-btn btn-grey" id="S1" data-relay="S1">S1</button>
+                        <button class="relay-btn btn-grey" id="S2" data-relay="S2">S2</button>
+                        <button class="relay-btn btn-grey" id="S3" data-relay="S3">S3</button>
+                        <button class="relay-btn btn-grey" id="S4" data-relay="S4">S4</button>
+                        <button class="relay-btn btn-grey" id="S5" data-relay="S5">S5</button>
+                        <button class="relay-btn btn-grey" id="S6" data-relay="S6">S6</button>
+                        <button class="relay-btn btn-grey" id="S7" data-relay="S7">S7</button>
+                        <button class="relay-btn btn-grey" id="S8" data-relay="S8">S8</button>
+                    </div>
+                    <div class="dimmer-controls">
+                        <div class="dimmer-card">
+                            <div class="dimmer-icon">💡</div>
+                            <div class="dimmer-info">
+                                <div class="dimmer-label">DIM1</div>
+                                <div class="dimmer-slider-container">
+                                    <input type="range" class="dimmer-slider" id="DIM1-slider" min="0" max="100" value="0" data-dimmer="DIM1">
+                                </div>
+                                <div class="dimmer-value" id="DIM1-value">0%</div>
+                            </div>
+                        </div>
+                        <div class="dimmer-card">
+                            <div class="dimmer-icon">💡</div>
+                            <div class="dimmer-info">
+                                <div class="dimmer-label">DIM2</div>
+                                <div class="dimmer-slider-container">
+                                    <input type="range" class="dimmer-slider" id="DIM2-slider" min="0" max="100" value="100" data-dimmer="DIM2">
+                                </div>
+                                <div class="dimmer-value" id="DIM2-value">100%</div>
+                            </div>
+                        </div>
+                        <div class="dimmer-card">
+                            <div class="dimmer-icon">💡</div>
+                            <div class="dimmer-info">
+                                <div class="dimmer-label">DIM3</div>
+                                <div class="dimmer-slider-container">
+                                    <input type="range" class="dimmer-slider" id="DIM3-slider" min="0" max="100" value="100" data-dimmer="DIM3">
+                                </div>
+                                <div class="dimmer-value" id="DIM3-value">100%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Custom Command</div>
+                    <div class="command-input-group">
+                        <input type="text" class="command-input" placeholder="Enter command...">
+                        <button class="send-btn">SEND</button>
+                    </div>
+                </div>
+                <div class="section"> 
+                    <div class="section-title">Schedules</div>
+                    <div class="schedules-grid">
+                        <div class="schedule-card">
+                            <div class="schedule-card-title">Relay Schedule</div>
+                            <div class="schedule-field">
+                                <label>Time:</label>
+                                <div class="schedule-input-group">
+                                    <input type="text"class="schedule-input time-input"placeholder="HH:MM AM"maxlength="8">
+
+
+                                    <span class="clock-icon" onclick="openTimePicker(event, this)">🕐</span>
+
+                                </div>
+                            </div>
+                                    
+
+                            <div class="schedule-field">
+                                <label>Relay:</label>
+                                <select class="schedule-select">
+                                    <option value="S1"  selected>S1</option>
+                                    <option value="S2">S2</option>
+                                    <option value="S3">S3</option>
+                                    <option value="S4">S4</option>
+                                    <option value="S5">S5</option>
+                                    <option value="S6">S6</option>
+                                    <option value="S7">S7</option>
+                                    <option value="S8">S8</option>
+                                </select>
+                            </div>
+                            <div class="schedule-field">
+                                <label>Action:</label>
+                                <select class="schedule-select">
+                                    <option value="OFF"selected >OFF</option>
+                                    <option value="ON">ON</option>
+                                </select>
+                            </div>
+                            <button class="add-btn">Add</button>
+
+                        </div>
+                        <div class="schedule-card">
+                            <div class="schedule-card-title">Device Schedule</div>
+                            <div class="schedule-field">
+                                <label>Time:</label>
+                                <div class="schedule-input-group">
+                                    <input type="text"class="schedule-input time-input"placeholder="HH:MM AM"maxlength="8">
+                                    <span class="clock-icon" onclick="openTimePicker(event, this)">🕐</span>
+
+                                </div>     
+                            </div>
+                        
+                            
+               
+
+                            <div class="schedule-field">
+                                <label>Device:</label>
+                                <input type="text" class="schedule-input" placeholder="DEVICE">
+                            </div>
+                            <div class="schedule-field">
+                                <label>Command:</label>
+                                <input type="text" class="schedule-input" placeholder="Command...">
+                            </div>
+                            <button class="add-btn">Add</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-title">Log Output</div>
+                    <div class="log-output">
+                        <div class="log-entry license">[LICENSE] Lifetime License Enabled.</div>
+                        </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <div class="info-card">
+                    <div class="info-item">
+                        <span class="info-label">Serial:</span>
+                        <span class="info-value" id="info-serial">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">MAC:</span>
+                        <span class="info-value" id="info-mac">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Firmware:</span>
+                        <span class="info-value" id="info-firmware">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Software:</span>
+                        <span class="info-value">1.6.2</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Boot Time:</span>
+                        <span class="info-value" id="info-boot">N/A</span>
+                    </div>
+                    <div class="warning-text">Reboot recommended after 24 hours.</div>
+                    <div class="info-item">
+                        <span class="info-label">Device ID:</span>
+                        <span class="info-value" id="info-deviceid">N/A</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="status-online">Online.</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn">Settings</button>
+                        <button class="action-btn health">Health Check</button>
+                        <button class="action-btn reboot">Reboot</button>
+                    </div>
+                </div>
+
+                <div class="info-card">
+                    <div class="section-title">Schedule Existing</div>
+                    <div class="schedule-output-card" id="schedule-existing">
+                        No schedules loaded.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+                 <div id="time-picker" class="time-picker hidden">
+  <div class="tp-row">
+  <select id="tp-hour" size="6"></select>
+  <select id="tp-minute" size="6"></select>
+  <select id="tp-ampm" size="2">
+    <option>AM</option>
+    <option>PM</option>
+  </select>
+</div>
+
+  <button onclick="applyTime()">OK</button>
+</div>
+
+
+
+<script>
+    /*
+     * COMPLETE, CLEANED, AND CORRECTED JAVASCRIPT LOGIC
+     * FIXES: Header display to show IP in the correct place and Screen Name via UDP.
+     */
+
+    /* ================= DEVICE IP & TCP SEND ================= */
+    const deviceIP = new URLSearchParams(window.location.search).get("ip");
+
+    if (!deviceIP) {
+        document.querySelector('.header h1').textContent = 'Error: Device IP Missing';
+        console.error("Device IP missing from URL.");
+    }
+    
+    // 🔥 FIX 1: Set a placeholder for the Screen Name on load.
+    // Assuming your HTML has a dedicated element for the IP, like the one used in `updateInfo`
+    // If not, you might need to check your HTML for where you want the IP to display.
+    // For now, we clear the screen-name text and set the IP display.
+    document.querySelector('.header .screen-name').textContent = 'Loading Screen Name...'; 
+    if (document.getElementById('deviceIpDisplay')) {
+        document.getElementById('deviceIpDisplay').textContent = `IP: ${deviceIP}`;
+    }
+
+
+    function appendLog(message, className = 'log-entry') {
+        const logOutput = document.querySelector('.log-output');
+        if (!logOutput) return;
+        const logEntry = document.createElement('div');
+        logEntry.className = className;
+        logEntry.textContent = message;
+        logOutput.appendChild(logEntry);
+        logOutput.scrollTop = logOutput.scrollHeight;
+    }
+
+    /**
+     * Sends a TCP command to the main process for transmission to the device.
+     * @param {string} command - The command string (e.g., "STATUS", "S1=3").
+     */
+    function sendTCP(command) {
+        if (!deviceIP) {
+            console.error("Cannot send command, Device IP is missing.");
+            return;
+        }
+
+        appendLog(`TCP TX: ${command}`, 'event');
+
+        if (window.api && window.api.sendTcpCommand) {
+            window.api.sendTcpCommand({
+                command: command
+            });
+        } else {
+            console.error("sendTcpCommand API not available.");
+            appendLog("ERROR: sendTcpCommand API not available.", 'log-entry license');
+        }
+    }
+
+    /* ================= UDP STATUS HANDLERS ================= */
+
+    /**
+     * Updates the UI for a single relay button based on status from the device.
+     */
+    function updateRelayStatus(relayId, status) {
+        const button = document.getElementById(relayId);
+        if (!button) return;
+
+        const isOn = status === '1' || status === 1;
+        const relayName = button.getAttribute('data-relay') || relayId;
+
+        if (isOn) {
+            button.classList.add('btn-green');
+            button.classList.remove('btn-grey');
+            button.textContent = `${relayName} [ON]`; 
+        } else {
+            button.classList.add('btn-grey');
+            button.classList.remove('btn-green');
+            button.textContent = `${relayName} [OFF]`; 
+        }
+    }
+
+    function updateDimmerStatus(dimmerId, value) {
+        const slider = document.getElementById(`${dimmerId}-slider`);
+        const valueSpan = document.getElementById(`${dimmerId}-value`);
+        const numericValue = parseInt(value, 10);
+
+        if (slider) {
+            slider.value = numericValue;
+            slider.style.background = `linear-gradient(90deg,#4caf50 ${numericValue}%,#3a3a3a ${numericValue}%)`;
+        }
+
+        if (valueSpan) {
+            valueSpan.textContent = `${numericValue}%`;
+        }
+    }
+
+    function updateInfo(data) {
+        if (data.SERIAL) document.getElementById('info-serial').textContent = data.SERIAL;
+        if (data.MAC) document.getElementById('info-mac').textContent = data.MAC;
+        if (data.FW) document.getElementById('info-firmware').textContent = data.FW;
+        if (data.BOOT_TIME) document.getElementById('info-boot').textContent = data.BOOT_TIME;
+        if (data.DEVICE_ID) document.getElementById('info-deviceid').textContent = data.DEVICE_ID;
+        
+        // 🔥 FIX 2: Only update the screen name when SCREEN_NAME data is received from the device
+        if (data.SCREEN_NAME) {
+            document.querySelector('.header .screen-name').textContent = data.SCREEN_NAME;
+        }
+    }
+
+    function updateSchedule(scheduleList) {
+        const scheduleOutput = document.getElementById('schedule-existing');
+        if (!scheduleOutput || !Array.isArray(scheduleList)) return;
+
+        scheduleOutput.innerHTML = scheduleList.map(item => `<div>${item}</div>`).join('');
+    }
+
+    // Main handler for all incoming UDP status data
+    function updateStatus(data) {
+        // 1. Relays (S1 to S8)
+        for (let i = 1; i <= 8; i++) {
+            const key = `S${i}`;
+            if (data.hasOwnProperty(key)) {
+                updateRelayStatus(key, data[key]);
+            }
+        }
+
+        // 2. Dimmers (DIM1 to DIM3)
+        for (let i = 1; i <= 3; i++) {
+            const key = `DIM${i}`;
+            if (data.hasOwnProperty(key)) {
+                updateDimmerStatus(key, data[key]);
+            }
+        }
+
+        // 3. Info Box & Screen Name (this calls the fixed logic above)
+        updateInfo(data);
+
+        // 4. Schedule Existing
+        if (data.SCHEDULE && Array.isArray(data.SCHEDULE)) {
+            updateSchedule(data.SCHEDULE);
+        }
+
+        // 5. Log Output
+        if (data.LOG) {
+            appendLog(data.LOG, 'log-entry info');
+        }
+    }
+
+    /* ================= EVENT LISTENERS & INITIALIZATION ================= */
+
+    // Listen for real-time status updates pushed from main process via UDP
+    if (window.api && window.api.onDeviceStatusUpdate) {
+        window.api.onDeviceStatusUpdate(updateStatus);
+    }
+
+    // INITIALIZATION: SEND STATUS COMMAND ON PAGE LOAD
+    sendTCP("STATUS");
+
+
+    // 1. RELAY BUTTONS
+    document.querySelectorAll('.relay-btn').forEach(btn => {
+        btn.onclick = () => {
+            const relay = btn.getAttribute('data-relay');
+            sendTCP(`${relay}=3`);
+        };
+    });
+
+    // 2. DIMMER SLIDERS
+    document.querySelectorAll('.dimmer-slider').forEach(slider => {
+        const dimmer = slider.getAttribute('data-dimmer');
+        const valueSpan = document.getElementById(`${dimmer}-value`);
+
+        // Update display on slide (input event)
+        slider.addEventListener('input', () => {
+            const value = slider.value;
+            valueSpan.textContent = `${value}%`;
+            slider.style.background = `linear-gradient(90deg,#4caf50 ${value}%,#3a3a3a ${value}%)`;
+        });
+
+        // Send command when the user finishes sliding (change event)
+        slider.addEventListener('change', () => {
+            const value = slider.value;
+            sendTCP(`${dimmer}=${value}`);
+            
+            // Clear the percentage text until the device confirms the change via UDP
+            if (valueSpan) {
+                valueSpan.textContent = '...'; 
+            }
+        });
+
+        // Initialize display to current value
+        slider.dispatchEvent(new Event('input'));
+    });
+
+    // 4. CUSTOM COMMAND
+    const customInput = document.querySelector('.command-input');
+    const sendBtn = document.querySelector('.send-btn');
+
+    function sendCustomCommand() {
+        const cmd = customInput.value.trim();
+        if (!cmd) return;
+        sendTCP(cmd);
+        customInput.value = "";
+    }
+
+    sendBtn.addEventListener('click', sendCustomCommand);
+    customInput.addEventListener('keydown', e => {
+        if (e.key === "Enter") sendCustomCommand();
+    });
+
+    // 5. RELAY SCHEDULE ADD BUTTON
+    const relayScheduleCard = document.querySelectorAll('.schedule-card')[0];
+    relayScheduleCard.querySelector('.add-btn').onclick = () => {
+        const time = relayScheduleCard.querySelector('.time-input').value;
+        const relay = relayScheduleCard.querySelectorAll('.schedule-select')[0].value;
+        const action = relayScheduleCard.querySelectorAll('.schedule-select')[1].value;
+
+        if (!time) {
+            alert("Fill schedule time");
+            return;
+        }
+
+        sendTCP(`SCHEDULE_ADD=${time}-${relay}-${action}`);
+    };
+
+    // 6. DEVICE SCHEDULE ADD BUTTON
+    const deviceScheduleCard = document.querySelectorAll('.schedule-card')[1];
+    deviceScheduleCard.querySelector('.add-btn').onclick = () => {
+        const time = deviceScheduleCard.querySelector('.time-input').value;
+        const cmd = deviceScheduleCard.querySelector('input[placeholder="Command..."]').value.trim();
+
+        if (!time || !cmd) {
+            alert("Fill device schedule fields");
+            return;
+        }
+
+        sendTCP(`SCHEDULE_ADD=${time}-DEVICE-${cmd}`);
+    };
+
+    // 7. ACTION BUTTONS (Health Check, Reboot, Settings)
+    document.querySelectorAll('.action-btn').forEach(btn => {
+        const txt = btn.textContent.trim();
+        if (txt === "Health Check") {
+            btn.onclick = () => sendTCP("HEALTH");
+        }
+        if (txt === "Reboot") {
+            btn.onclick = () => {
+                if (confirm("Reboot device?")) {
+                    sendTCP("REBOOT");
+                }
+            };
+        }
+        if (txt === "Settings") {
+            btn.onclick = () => {
+                if (window.api && window.api.openSettings) {
+                    window.api.openSettings();
+                } else {
+                    alert("Electron API not available to open settings.");
+                }
+            };
+        }
+    });
+
+    // Time  Picker JavaScript Logic
+
+    let activeTimeInput = null;
+
+function openTimePicker(event, icon) {
+    event.stopPropagation();   // 🔥 KEY LINE
+
+    activeTimeInput = icon.parentElement.querySelector('.time-input');
+
+    const picker = document.getElementById('time-picker');
+    const rect = icon.getBoundingClientRect();
+
+    picker.style.top = rect.bottom + window.scrollY + 6 + "px";
+    picker.style.left = rect.right + window.scrollX - 160 + "px";
+
+
+    picker.classList.remove('hidden');
+}
+
+
+// Populate dropdowns
+const hourSelect = document.getElementById('tp-hour');
+const minuteSelect = document.getElementById('tp-minute');
+
+for (let h = 1; h <= 12; h++) {
+    hourSelect.innerHTML += `<option>${String(h).padStart(2,'0')}</option>`;
+}
+
+for (let m = 0; m < 60; m++) {
+    minuteSelect.innerHTML += `<option>${String(m).padStart(2,'0')}</option>`;
+}
+
+function applyTime() {
+    const h = hourSelect.value;
+    const m = minuteSelect.value;
+    const ap = document.getElementById('tp-ampm').value;
+
+    if (activeTimeInput) {
+        activeTimeInput.value = `${h}:${m} ${ap}`;
+    }
+
+    document.getElementById('time-picker').classList.add('hidden');
+}
+
+// Close picker if clicked outside
+document.addEventListener('click', () => {
+    document.getElementById('time-picker').classList.add('hidden');
+});
+
+
+document.getElementById('time-picker').addEventListener('click', e => {
+    e.stopPropagation(); // 🔥 KEEP PICKER OPEN
+});
+
+//only numeric-style input allowed - time
+
+function restrictTimeInput(e) {
+    const allowedKeys = [
+        "Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab"
+    ];
+
+    if (allowedKeys.includes(e.key)) return;
+
+    // Allow numbers
+    if (e.key >= "0" && e.key <= "9") return;
+
+    // Allow colon and space
+    if (e.key === ":" || e.key === " ") return;
+
+    // Block everything else
+    e.preventDefault();
+}
+ 
+// Auto-format when input loses focus
+document.querySelectorAll('.time-input').forEach(input => {
+    input.addEventListener('input', () => {
+        let v = input.value.toUpperCase();
+
+        // Remove everything except numbers
+        v = v.replace(/[^0-9]/g, '');
+
+        let hh = v.substring(0, 2);
+        let mm = v.substring(2, 4);
+
+        // Validate HH
+        if (hh.length === 2) {
+            let h = parseInt(hh, 10);
+            if (h < 1) hh = "01";
+            if (h > 12) hh = "12";
+        }
+
+        // Validate MM
+        if (mm.length === 2) {
+            let m = parseInt(mm, 10);
+            if (m > 59) mm = "59";
+        }
+
+        let result = "";
+        if (hh) result += hh;
+        if (mm) result += ":" + mm;
+
+        if (result.length >= 5) {
+            result += " AM";   // default AM
+        }
+
+        input.value = result;
+    });
+
+    // Toggle AM / PM on click
+       input.addEventListener('keydown', e => {
+        if (e.code === "Space") {
+            e.preventDefault();
+
+            if (input.value.includes("AM")) {
+                input.value = input.value.replace("AM", "PM");
+            } else if (input.value.includes("PM")) {
+                input.value = input.value.replace("PM", "AM");
+            }
+        }
+    });
+});
+
+
+
+
+
+
+</script>
+
+</body>
+</html>
